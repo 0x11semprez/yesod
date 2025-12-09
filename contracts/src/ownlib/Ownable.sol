@@ -17,7 +17,7 @@ contract Ownable {
     address private _owner;
 
     constructor(address initialOwner) {
-        if (initialOwner == address(0)){revert InvalidOwner(address(0));}
+        if (initialOwner == address(0)){revert InvalidOwner();}
         transferOwnership (initialOwner);
     }
 
@@ -33,7 +33,7 @@ contract Ownable {
     }
     
 
-    function _checkOwner() internal returns(bool) {
+    function _checkOwner() internal view {
         assembly {
             if iszero(eq(caller(), sload(_owner.slot))) {
                 mstore(0x00, 0x990b5bc4)
@@ -55,5 +55,9 @@ contract Ownable {
         emit TransferOwnership(oldOwner, _owner);
     }
 
-    
+    function disapproveOwnership() public onlyOwner {
+        assembly {
+            sstore(_owner.slot, 0x0000000000000000000000000000000000000000)
+        }
+    }
 }
