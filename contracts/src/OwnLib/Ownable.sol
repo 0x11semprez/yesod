@@ -28,20 +28,31 @@ contract Ownable {
         _;
     }
 
-    function owner() public view returns(address mainOwner) {
+    function owner() 
+        public 
+        view 
+        returns(address mainOwner) 
+    {
         assembly {
             mainOwner := sload(_owner.slot)
         }
     }
 
-    function oldOwner() public view returns(address previousOwner) {
+    function oldOwner() 
+        public 
+        view 
+        returns(address previousOwner) 
+    {
         assembly {
             previousOwner := sload(_oldOwner.slot)
         }
     }
     
 
-    function _checkOwner() internal view {
+    function _checkOwner() 
+        internal 
+        view 
+    {
         assembly {
             if iszero(eq(caller(), sload(_owner.slot))) {
                 mstore(0x00, 0x990b5bc4)
@@ -51,7 +62,11 @@ contract Ownable {
 
     }
 
-    function transferOwnership(address newOwner) public payable onlyOwner{
+    function transferOwnership(address newOwner) 
+        public 
+        payable 
+        onlyOwner
+    {
         assembly {
             if iszero(shl(96, newOwner)) {
                 mstore(0x00, 0xa15739da)
@@ -63,7 +78,11 @@ contract Ownable {
         emit TransferOwnership(_oldOwner, _owner);
     }
 
-    function disapproveOwnership() public payable onlyOwner {
+    function disapproveOwnership() 
+        public 
+        payable 
+        onlyOwner 
+    {
         assembly {
             sstore(_owner.slot, 0x0000000000000000000000000000000000000000)
         }
