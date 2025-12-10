@@ -16,9 +16,11 @@ contract Ownable {
 
     address private _owner;
 
-    constructor(address initialOwner) {
-        if (initialOwner == address(0)){revert InvalidOwner();}
-        transferOwnership (initialOwner);
+    address private _oldOwner;
+
+    constructor() {
+        if (msg.sender== address(0)) {revert InvalidOwner();}
+        _owner = msg.sender;
     }
 
     modifier onlyOwner() {
@@ -26,9 +28,15 @@ contract Ownable {
         _;
     }
 
-    function owner() public view returns(address result) {
+    function owner() public view returns(address mainOwner) {
         assembly {
-            result := sload(_owner.slot)
+            mainOwner := sload(_owner.slot)
+        }
+    }
+
+    function oldOwner() public view returns(address previousOwner) {
+        assembly {
+            previousOwner := sload(_oldOwner.slot)
         }
     }
     
@@ -43,19 +51,19 @@ contract Ownable {
 
     }
 
-    function transferOwnership(address newOwner) internal onlyOwner{
+    function transferOwnership(address newOwner) public payable onlyOwner{
         assembly {
             if iszero(shl(96, newOwner)) {
                 mstore(0x00, 0xa15739da)
                 revert(0x1c, 0x04)
             }
         }
-        address oldOwner = _owner;
+        _oldOwner = _owner;
         _owner =  newOwner;
-        emit TransferOwnership(oldOwner, _owner);
+        emit TransferOwnership(_oldOwner, _owner);
     }
 
-    function disapproveOwnership() public onlyOwner {
+    function disapproveOwnership() public payable onlyOwner {
         assembly {
             sstore(_owner.slot, 0x0000000000000000000000000000000000000000)
         }
