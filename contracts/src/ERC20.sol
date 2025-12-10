@@ -18,13 +18,45 @@ contract ERC20 {
     //@notice Define our variables
     //@dev Pay attention, be creative
 
-    string public constant TOKENNAME = "dontknow";
-    string public constant TOKENSYMBOL= "DT";
-    uint8 public constant DECIMALS = 18;
-    uint public totalSupply = 10000000;
+    string private constant TOKENNAME = "dontknow";
+    string private constant TOKENSYMBOL= "DT";
+    uint8 private constant DECIMALS = 18;
+    uint private totalSupply = 10000000;
 
     mapping(address => uint) private _balances;
     mapping(address => mapping(address => uint)) private _allowances;
+
+    //@notice Some views functions.
+    //@dev better to use that because of the control.
+    function getTOKENNAME() public pure returns(string memory) {
+        //@dev remember, strings are special so you need to use nmemory amd as we hardwrire with constamt.
+        assembly {
+            TOKENNAME := mload(0x40) 
+            mstore(TOKENNAME, 0x20)
+            mstore(add(TOKENNAME, 0x20), 8) 
+            mstore(add(TOKENNAME, 0x40), ) 
+            mstore(0x40,add(TOKENMAME, 0x60)) 
+            return mstore(TOKENAME, 0x60) 
+        }
+    }
+
+
+    function getTOKENSYMBOL() public pure(string memory) {
+        assembly {
+            TOKENSYMBOL := mload(0x40)
+            mstore(TOKENSYMBOL, 0x20)
+            mstore(add(TOKENSYMBOL, 0x20), 3)
+            mstore(add(TOKENSYMBOL, 0x40), )
+            mstore(0x40, add(TOKENSYMBOL, 0x60))
+            mload(TOKENSYMBOL, 0x60)
+        }
+    }
+
+    function getDECIMAL public pure returns(uint) {
+        assembly {
+            DECIMAL := 18
+        }
+    }
 
     function _transfer(address from, address to, uint amount) 
         private
@@ -48,18 +80,19 @@ contract ERC20 {
         public
         returns(bool) 
     {
-        _transfer(msg.sender, to, amount);
+        _transfer(from, to, amount);
+        emit Transfer(from, to, amount);
         return true;
-        emit Transfer(msg.sender, to, amount);
     }
 
-    function transferFrom(address from, address to, uint256 value) public returns (bool) {
-        if (_allowances[from][msg.sender] < value) {
+    function transferFrom(address from, address to, uint256 amount) public returns (bool) {
+        uint _allowance = _allowances[from][msg.sender];
+        if (_allowance > amount) {
             revert("Insufficient allowance");
         }
 
-        _allowances[from][msg.sender] -= value;
-        _transfer(from, to, value);
+        _allowance -= amount;
+        _transfer(from, msg.sender, amount);
         return true;
     }
 
@@ -75,12 +108,12 @@ contract ERC20 {
 
     }
 
-    function approve(address spender, uint value) 
+    function approve(address spender, uint amount) 
         external 
         returns(bool) 
     {
-        _allowances[msg.sender][spender] = value;
-        emit Approval(msg.sender, spender, value);
+        _allowances[msg.sender][spender] = amount;
+        emit Approval(msg.sender, spender, amount);
         return true;
 
     }
