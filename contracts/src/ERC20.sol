@@ -1,5 +1,5 @@
 //SPDX-Licence-Identifier: MIT
-pragma solidity ^0.8.27;
+pragma solidity ^0.8.27f;
 
 contract ERC20 {
     //@notice You can see all errors here;
@@ -8,6 +8,7 @@ contract ERC20 {
     error notEnoughETHInYourWallet(); //keccak256 : 0x49661fc744d3a721f3d40a93283704159489576e5de9f2454fe8c1e87afc78eb
     error transactionFailed(); //keccak256 : 0xdccf81a9a2a82c9da94f3d3b593fc9afc9d89f9702a4a18c04b0ad53799c7120
     error notEnoughAllowToSpend();
+    error  insufficientFunds();//keccak256 0x952d78c4b28c81a938fc7be8bf876b23e880e7620854eee740c78ce3fb37dadb
 
     //@notice It is for all dev front and back can receive informartion;
     //@dev As you might know, just events;
@@ -59,40 +60,50 @@ contract ERC20 {
     }
 
     function _transfer(address from, address to, uint amount) 
-        private
+        private `
         returns(bool) 
     {
         assembly {
-            if lt(balance(caller()), mload(amount)) {
+            mstore(0x00, from)
+            mstore(0x20, _balances.slot)
+            let balanceSlot := keccak256(0x00, 0x40)
+            let balanceFrom := sload(balanceSlot)
+            if lt(balanceFrom, amount) {
                 mstore(0x00, 0x7afc78eb)
-                mstore(0x1c, 0x04)
+                revert(0x1c, 0x04)
             }
-
-            let subbaance := sub(balance(caller()), mload(amount))
-            let addbalance := add(balance(mload(amount)), mload(amount))  
         }
-        
+
         _balances[from] -= amount;
         _balances[to] += amount;
+        event Transfer(from, to, amount)
+        return true;
+
     }
 
     function transfer(address to, uint amount) 
         public
         returns(bool) 
     {
-        _transfer(from, to, amount);
-        emit Transfer(from, to, amount);
+        _transfer(msg.sender, to, amount);
+        emit Transfer(msg.sender, to, amount);
         return true;
     }
 
     function transferFrom(address from, address to, uint256 amount) public returns (bool) {
         uint _allowance = _allowances[from][msg.sender];
-        if (_allowance > amount) {
-            revert("Insufficient allowance");
+        uint newAllowance;
+        assembly {
+            if lt(_allowance, amount) {
+                mstore(0x00, 0xfb37dadb)
+                revert(0x1c, 0x04)
+            }
+            newAllowance := sub(currentAllowance, amount)
         }
 
-        _allowance -= amount;
-        _transfer(from, msg.sender, amount);
+        _allowances[from][msg.sender] = newAlloawance;
+        
+        _transfer(from, to, amount);
         return true;
     }
 
