@@ -1,18 +1,19 @@
 import './App.css';
 import { BrowserRouter, Routes, Route, Outlet } from 'react-router-dom';
-import HomePage from './pages/home/HomePage.tsx';
-import Nav from './components/navbar/navbar.tsx';
 
-function Layout() {
+import HomePage from './pages/home/HomePage.tsx';
+import NavBar from './components/navbar/NavBar.tsx';
+
+const Layout = () => {
   return (
     <>
-      <Nav />
+      <NavBar />
       <Outlet />
     </>
   );
 }
 
-function App() {
+const App = () => {
   return (
     <BrowserRouter>
       <Routes>

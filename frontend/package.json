@@ -10,12 +10,21 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@react-native-async-storage/async-storage": "^1.24.0",
+    "@react-native-community/netinfo": "^11.4.1",
+    "@reown/walletkit": "^1.4.1",
     "@tailwindcss/vite": "^4.1.17",
+    "@walletconnect/jsonrpc-types": "^1.0.4",
+    "@walletconnect/react-native-compat": "^2.23.1",
+    "fast-text-encoding": "^1.0.6",
     "motion": "^12.23.26",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "react-native-get-random-values": "^2.0.0",
     "react-router-dom": "^7.10.1",
-    "tailwindcss": "^4.1.17"
+    "tailwindcss": "^4.1.17",
+    "thirdweb": "^5.116.1",
+    "yarn": "^1.22.22"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
