@@ -1,5 +1,5 @@
 //SPDX-Licence-Identifier: MIT
-pragma solidity ^0.8.27f;
+pragma solidity ^0.8.27;
 
 contract ERC20 {
     //@notice You can see all errors here;
@@ -10,6 +10,11 @@ contract ERC20 {
     error notEnoughAllowToSpend();
     error  insufficientFunds();//keccak256 0x952d78c4b28c81a938fc7be8bf876b23e880e7620854eee740c78ce3fb37dadb
 
+    //@notice just generate some functions;
+    //@dev better seed for mapping;
+    uint256 constant ALLOWANCE_SEED = uint256(keccak256("seed._allowances"));
+    uint256 constant BALANCE_SEED = uint256(keccak256("seed._balances"));
+    
     //@notice It is for all dev front and back can receive informartion;
     //@dev As you might know, just events;
     event Approval(address indexed owner, address indexed spender, uint amount);
@@ -64,10 +69,9 @@ contract ERC20 {
         returns(bool) 
     {
         assembly {
+            mstore(0x0c, BALANCE_SEED)
             mstore(0x00, from)
-            mstore(0x20, _balances.slot)
-            let balanceSlot := keccak256(0x00, 0x40)
-            let balanceFrom := sload(balanceSlot)
+            let balanceFrom := sload(keccak256(0x0c, 0x20))
             if lt(balanceFrom, amount) {
                 mstore(0x00, 0x7afc78eb)
                 revert(0x1c, 0x04)
@@ -107,15 +111,17 @@ contract ERC20 {
         return true;
     }
 
-
-
     function allowance(address owner, address spender) 
         public 
         view 
         returns(uint256) 
     {
-        
-        return _allowances[owner][spender];
+        assembly {
+            mstore(0x00, owner)
+            mstore(0x0c, ALLOWACE_SEED)
+            mstore(0x20, spender) 
+            allowance := sload(keccak256(0x0c, 0x34))
+        }
 
     }
 
@@ -126,7 +132,8 @@ contract ERC20 {
         _allowances[msg.sender][spender] = amount;
         emit Approval(msg.sender, spender, amount);
         return true;
-
     }
+
+    function _mint()
 
 }
