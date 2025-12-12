@@ -1,18 +1,17 @@
 @import "tailwindcss";
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
 @font-face {
-  font-family:Bodoni;
+  font-family: "Bodoni";
   font-style: normal;
-  font-weight: 200 700;
+  font-weight: normal;
   font-display: swap;
-  src: url(/src/assets/bodoni_xt/BodoniXT.ttf) format(ttf);
+  src: url("/src/assets/bodoni_xt/BodoniXT.ttf") format("truetype");
 }
 
 :root {
-  font-family: "Bodoni";
-  background-color: black;
+  background-color: white;
+}
+
+body {
+  font-family: "Bodoni", serif;
 }

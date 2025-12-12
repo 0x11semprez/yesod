@@ -1,0 +1,22 @@
+@import "tailwindcss";
+
+.logo--xs {
+  width: 24px;
+}
+
+.logo--sm {
+  width: 32px;
+}
+
+.logo--md {
+  width: 40px;
+}
+
+.logo--lg {
+  width: 56px;
+}
+
+.logo--xl {
+  width: 72px;
+}
+

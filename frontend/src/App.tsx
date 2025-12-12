@@ -1,12 +1,29 @@
-import { useState } from 'react'
-import './App.css'
+import './App.css';
+import { BrowserRouter, Routes, Route, Outlet } from 'react-router-dom';
+import HomePage from './pages/home/HomePage.tsx';
+import Nav from './components/navbar/navbar.tsx';
 
-const App = () => {
+function Layout() {
   return (
-    <> 
-    <h1 className="text-gray-700 dark:text-gray-400">Hello</h1>
+    <>
+      <Nav />
+      <Outlet />
     </>
   );
-};
+}
 
-export default App
+function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route element={<Layout />}>
+          <Route path="/" element={<HomePage />} />
+          <Route path="*" element={<div>404 (route not found)</div>} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
+  );
+}
+
+
+export default App;
