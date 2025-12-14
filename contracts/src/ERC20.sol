@@ -10,11 +10,7 @@ contract ERC20 {
     error notEnoughAllowToSpend();
     error  insufficientFunds();//keccak256 0x952d78c4b28c81a938fc7be8bf876b23e880e7620854eee740c78ce3fb37dadb
 
-    //@notice just generate some functions;
-    //@dev better seed for mapping;
-    uint256 constant ALLOWANCE_SEED = uint256(keccak256("seed._allowances"));
-    uint256 constant BALANCE_SEED = uint256(keccak256("seed._balances"));
-    
+
     //@notice It is for all dev front and back can receive informartion;
     //@dev As you might know, just events;
     event Approval(address indexed owner, address indexed spender, uint amount);
@@ -23,55 +19,67 @@ contract ERC20 {
 
     //@notice Define our variables
     //@dev Pay attention, be creative
-
-    string private constant TOKENNAME = "dontknow";
-    string private constant TOKENSYMBOL= "DT";
-    uint8 private constant DECIMALS = 18;
-    uint private totalSupply = 10000000;
+    uint8 private DECIMALS = 18;
+    uint private _totalSupply = 10000000;
 
     mapping(address => uint) private _balances;
     mapping(address => mapping(address => uint)) private _allowances;
 
+    constructor(address owner) {
+        owner = msg.sender;
+        _balances[owner] += _totalSupply;
+    }
     //@notice Some views functions.
     //@dev better to use that because of the control.
-    function getTOKENNAME() public pure returns(string memory) {
+    function getTOKENNAME() public view returns(string memory) {
         //@dev remember, strings are special so you need to use nmemory amd as we hardwrire with constamt.
         assembly {
-            TOKENNAME := mload(0x40) 
+            let TOKENNAME := mload(0x40) 
             mstore(TOKENNAME, 0x20)
-            mstore(add(TOKENNAME, 0x20), 8) 
-            mstore(add(TOKENNAME, 0x40), ) 
-            mstore(0x40,add(TOKENMAME, 0x60)) 
-            return mstore(TOKENAME, 0x60) 
+            mstore(add(TOKENNAME, 0x20), 5) 
+            mstore(add(TOKENNAME, 0x40), shl(216,0x5945534f44)) 
+            mstore(0x40,add(TOKENNAME, 0x60)) 
+            return (TOKENNAME, 0x60) 
         }
     }
 
 
-    function getTOKENSYMBOL() public pure(string memory) {
+    function getTOKENSYMBOL() public view returns(string memory) {
         assembly {
-            TOKENSYMBOL := mload(0x40)
+            let TOKENSYMBOL := mload(0x40)
             mstore(TOKENSYMBOL, 0x20)
             mstore(add(TOKENSYMBOL, 0x20), 3)
-            mstore(add(TOKENSYMBOL, 0x40), )
+            mstore(add(TOKENSYMBOL, 0x40), shl(232, 0x595344))
             mstore(0x40, add(TOKENSYMBOL, 0x60))
-            mload(TOKENSYMBOL, 0x60)
+            return (TOKENSYMBOL, 0x60)
         }
     }
 
-    function getDECIMAL public pure returns(uint) {
-        assembly {
-            DECIMAL := 18
-        }
+    function getDECIMAL() public view returns(uint) {
+        return 18;
+    }
+
+    function getTOTALSUPPLY() public view returns(uint) {
+        return 1000000;
+    }
+
+    function getBALANCE(address owner) public view returns(uint) {
+        return _balances[owner];
+        // assembly {
+        //     mstore(0x00, owner)
+        //     mstore(0x20, _balances.slot)
+        //     let result := sload(keccak256(0x00, 0x40))
+        // }
     }
 
     function _transfer(address from, address to, uint amount) 
-        private `
+        private 
         returns(bool) 
     {
         assembly {
-            mstore(0x0c, BALANCE_SEED)
             mstore(0x00, from)
-            let balanceFrom := sload(keccak256(0x0c, 0x20))
+            mstore(0x20, _balances.slot)
+            let balanceFrom := sload(keccak256(0x00, 0x40))
             if lt(balanceFrom, amount) {
                 mstore(0x00, 0x7afc78eb)
                 revert(0x1c, 0x04)
@@ -80,7 +88,7 @@ contract ERC20 {
 
         _balances[from] -= amount;
         _balances[to] += amount;
-        event Transfer(from, to, amount)
+        emit Transfer(from, to, amount);
         return true;
 
     }
@@ -102,10 +110,10 @@ contract ERC20 {
                 mstore(0x00, 0xfb37dadb)
                 revert(0x1c, 0x04)
             }
-            newAllowance := sub(currentAllowance, amount)
+            newAllowance := sub(_allowance, amount)
         }
 
-        _allowances[from][msg.sender] = newAlloawance;
+        _allowances[from][msg.sender] = newAllowance;
         
         _transfer(from, to, amount);
         return true;
@@ -118,9 +126,9 @@ contract ERC20 {
     {
         assembly {
             mstore(0x00, owner)
-            mstore(0x0c, ALLOWACE_SEED)
-            mstore(0x20, spender) 
-            allowance := sload(keccak256(0x0c, 0x34))
+            mstore(0x20, spender)
+            mstore(0x40, _allowances.slot)
+            let allo := sload(keccak256(0x00, 0x60))
         }
 
     }
@@ -134,6 +142,7 @@ contract ERC20 {
         return true;
     }
 
-    function _mint()
+    function _mint() internal {}
+    function _burm() internal {}
 
 }
