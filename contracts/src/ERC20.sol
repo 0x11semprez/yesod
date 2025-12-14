@@ -16,10 +16,6 @@ contract ERC20 {
     event Approval(address indexed owner, address indexed spender, uint amount);
     event Transfer(address indexed from, address indexed to, uint amount);
 
-
-    //@notice Define our variables
-    //@dev Pay attention, be creative
-    uint8 private DECIMALS = 18;
     uint private _totalSupply = 10000000;
 
     mapping(address => uint) private _balances;
@@ -63,13 +59,12 @@ contract ERC20 {
         return 1000000;
     }
 
-    function getBALANCE(address owner) public view returns(uint) {
-        return _balances[owner];
-        // assembly {
-        //     mstore(0x00, owner)
-        //     mstore(0x20, _balances.slot)
-        //     let result := sload(keccak256(0x00, 0x40))
-        // }
+    function getBALANCE(address account) public view returns(uint balanceaccount) {
+        assembly {
+            mstore(0x00, owner)
+            mstore(0x20, _balances.slot)
+            balanceaccount := sload(keccak256(0x00, 0x40))
+        }
     }
 
     function _transfer(address from, address to, uint amount) 
@@ -97,15 +92,20 @@ contract ERC20 {
         public
         returns(bool) 
     {
-        _transfer(msg.sender, to, amount);
-        emit Transfer(msg.sender, to, amount);
+        address from = msg.sender();
+        _transfer(from, to, amount);
+        emit Transfer(from, to, amount);
         return true;
     }
 
-    function transferFrom(address from, address to, uint256 amount) public returns (bool) {
-        uint _allowance = _allowances[from][msg.sender];
+    function transferFrom(address owner, address spender, uint256 amount) public returns (bool) {
+        address spender = msg.sender();
         uint newAllowance;
         assembly {
+            mstore(0x00, owner)
+            mstore(0x20, spender)
+            mstore(0x40, _allowances.slot)
+            let _allowance := sload(keccak256(0x00, 0x60))
             if lt(_allowance, amount) {
                 mstore(0x00, 0xfb37dadb)
                 revert(0x1c, 0x04)
@@ -113,22 +113,24 @@ contract ERC20 {
             newAllowance := sub(_allowance, amount)
         }
 
-        _allowances[from][msg.sender] = newAllowance;
+        _allowances[owner][spender] = newAllowance;
+        _balances[owner] -= amount;
+        _balances[spender] += amount;
         
-        _transfer(from, to, amount);
+        _transfer(owner, spender, amount);
         return true;
     }
 
     function allowance(address owner, address spender) 
         public 
         view 
-        returns(uint256) 
+        returns(uint256 allo) 
     {
         assembly {
             mstore(0x00, owner)
             mstore(0x20, spender)
             mstore(0x40, _allowances.slot)
-            let allo := sload(keccak256(0x00, 0x60))
+            allo := sload(keccak256(0x00, 0x60))
         }
 
     }
@@ -137,12 +139,13 @@ contract ERC20 {
         external 
         returns(bool) 
     {
-        _allowances[msg.sender][spender] = amount;
-        emit Approval(msg.sender, spender, amount);
+        address owner = msg.sender();
+        _allowances[owner][spender] = amount;
+        emit Approval(owmer, spender, amount);
         return true;
     }
 
     function _mint() internal {}
-    function _burm() internal {}
+    function _burn() internal {}
 
 }
