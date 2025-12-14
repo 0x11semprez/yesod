@@ -1,5 +1,5 @@
 //SPDX-Licence-Identifier: MIT
-pragma solidity ^0.8.27;
+pragma solidity 0.8.27;
 
 contract ERC20 {
     //@notice You can see all errors here;

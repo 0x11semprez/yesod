@@ -1,5 +1,5 @@
 //SPDX-Licence-Identifier: MIT
-pragma solidity ^0.8.27;
+pragma solidity 0.8.27;
 
 //@title Ownable Contract By Me
 //@dev This not recommended to create your own lib Ownable or SafeERC20 or whatever it is because you could make mistakes, so better to use something who works without a doubt, Trust OpenZellin
