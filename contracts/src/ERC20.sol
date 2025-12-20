@@ -17,9 +17,17 @@ import {Ownable} from "./Ownable.sol";
     //@dev As you might know, just events;
     event Approval(address indexed owner, address indexed spender, uint amount);
     event Transfer(address indexed from, address indexed to, uint amount);
+    event Mint(address indexed from, address indexed to, uint amount);
+
 
     //@dev I choose a pre definied supply;
-    uint private _totalSupply = 10000000; 
+    uint private _totalSupply = 10000000;
+    
+    //@dev I want to mint my token every 0.11/minutes, so we need to know how token are emitted in a second without forgetting that solidity didn't take float.
+    // so 0.11÷60≈0.001833333 token/sec, 0.001833333 * 1e18 because my token have 18 decimals ≈ 1.833333e15 wei-token / sec
+    uint public constant EMISSIONRATE = 1833333333333333;
+    uint public lastMinted = block.timestamp;
+
 
     mapping(address => uint) private _balances;
     mapping(address => mapping(address => uint)) private _allowances;
@@ -115,7 +123,7 @@ import {Ownable} from "./Ownable.sol";
 
 
     function _transfer(address from, address to, uint amount) 
-        private 
+        internal 
         returns(bool) 
     {
         assembly {
@@ -229,7 +237,7 @@ import {Ownable} from "./Ownable.sol";
     }
 
     function approve(address spender, uint amount) 
-        external 
+        public 
         returns(bool) 
     {
         address owner = msg.sender;
@@ -240,19 +248,41 @@ import {Ownable} from "./Ownable.sol";
     }
     
     function _mint(address to, uint amount) 
-        private 
+        internal
         onlyOwner
         returns(bool)
     {
         assembly {
+            let from := caller()
+
+            mstore(0x00, from)
+            mstore(0x20, _balances.slot)
+            let fromKey := keccak256(0x00, 0x40)
+            let fromBalance := sload(fromKey)
+
+            mstore(0x00, to)
+            mstore(0x20, _balances.slot)
+            let toKey := keccak256(0x00, 0x40)
+            let toBalance := sload(tomKey)
+
+            if ls(from, amount) {
+                mstore(0x00, 0x5480b8df)
+                return(0x1c, 0x04)
+            }
             
+            let fromBalanceAfter := sub(fromBalance, amount)
+            sstore(fromKey, fromBalanceAfter)
+
+            let toBalanceAfter := add(toBalance, amount)
+            sstore(toKey, toBalanceAfter)
         }
 
+        Mint(from, to, amount)
         return true;
     }
 
     function _burn(uint amount) 
-        external 
+        internal
         onlyOwner 
         returns(bool)
     {
@@ -263,7 +293,4 @@ import {Ownable} from "./Ownable.sol";
         return true;
 
     }
-
-    receive() external payable {}
-    fallback() external payable {}
 }
