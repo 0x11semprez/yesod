@@ -1,9 +1,9 @@
 //SPDX-Licence-Identifier: MIT
 pragma solidity ^0.8.27;
 
-import "./Ownable.sol";
+import {Ownable} from "./Ownable.sol";
 
-contract ERC20 is Ownable {
+ contract ERC20 is Ownable {
 
     //@notice You can see all errors here;
     //@dev error handling help you to spend less gas;
@@ -11,7 +11,8 @@ contract ERC20 is Ownable {
     error TransactionFailed(); //keccak256 0xf65044edbd7753e2683b3e1f1116675530a1ea8dc243f8c08c1e4946045da917
     error InsufficientFunds(); //keccak256 0xd2ce7f36f76fcb4610533d95a01cb9b0fdd2b058fe7ffae027e7112f5480b8df
     error OverflowError(); //keccak256 0x3050f6b6cb48b3e4ea702c585b4b686989a4b52ad93ab2d1cbd92df13248bd66
-
+    error AlreadyInitialized(); //keccak256 0x8f076f42b0523e885c670e4a6fe058ff88bd4a1ed50db5541025e052a00a98a5
+    error Address0(); //keccak256 0xc5bfd600aba324752e9fa24f3789392bea12ddc8a5a813994f04863d8599fc49
 
     //@dev As you might know, just events;
     event Approval(address indexed owner, address indexed spender, uint amount);
@@ -20,17 +21,18 @@ contract ERC20 is Ownable {
     //@dev I choose a pre definied supply;
     uint private _totalSupply = 10000000; 
 
-    mapping(address account => uint amount) private _balances;
-    mapping(address account => mapping(address account => uint amount)) private _allowances;
+    mapping(address => uint) private _balances;
+    mapping(address => mapping(address => uint)) private _allowances;
 
-    constructor(address owner) {
-        owner = msg.sender;
-        _balances[owner] += _totalSupply;
+    constructor() {
+        address _contract = address(this);
+        if (_balances[_contract] != 0) {revert AlreadyInitialized()}
+        _balances[_contract] = _totalSupply;
     }
 
     //@notice Some views functions.
     //@dev better to use that because of the control.
-    function getTOKENNAME() 
+    function getTokenName() 
         public 
         view 
         returns(string memory) 
@@ -47,7 +49,7 @@ contract ERC20 is Ownable {
     }
 
 
-    function getTOKENSYMBOL() 
+    function getTokenSymbol() 
         public 
         view 
         returns(string memory) 
@@ -62,7 +64,7 @@ contract ERC20 is Ownable {
         }
     }
 
-    function getDECIMAL() 
+    function getDecimal() 
         public 
         view 
         returns(uint) 
@@ -70,7 +72,7 @@ contract ERC20 is Ownable {
         return 18;
     }
 
-    function getTOTALSUPPLY() 
+    function getTotalSupply() 
         public 
         view 
         returns(uint) 
@@ -79,15 +81,35 @@ contract ERC20 is Ownable {
     }
 
 
-    function getBALANCE(address account) 
+    function getBalance() 
         public 
         view 
-        returns(uint balanceaccount) 
+        returns(uint) 
     {
         assembly {
             mstore(0x00, caller())
             mstore(0x20, _balances.slot)
-            balanceaccount := sload(keccak256(0x00, 0x40))
+            let key := keccak256(0x00, 0x40)
+
+            let balanceAccount := sload(key)
+            mstore(0x00, balanceAccount)
+            return(0x00, 32)
+        }
+    }
+
+    function getBalanceContract() 
+        public 
+        view 
+        returns(uint)
+    {
+        assembly {
+            mstore(0x00, address())
+            mstore(0x20, _balances.slot)
+            let key := keccak256(address(),_balances.slot)
+
+            let balanceContract := sload(key)
+            mstore(0x00, balanceContract)
+            return(0x00, 32)
         }
     }
 
@@ -99,11 +121,13 @@ contract ERC20 is Ownable {
         assembly {
             mstore(0x00, from)
             mstore(0x20, _balances.slot)
-            let balanceFrom := sload(keccak256(0x00, 0x40))
+            let fromKey := keccak256(0x00, 0x40)
+            let balanceFrom := sload(fromKey)
 
             mstore(0x00, to)
             mstore(0x20, _balances.slot)
-            let balanceTo := sload(keccak256(0x00, 0x40))
+            let toKey := keccak256(0x00, 0x40)
+            let balanceTo := sload(toKey)
 
             if lt(balanceFrom, amount) {
                 mstore(0x00, 0x5480b8df)
@@ -113,8 +137,8 @@ contract ERC20 is Ownable {
             let balanceFromAfter := sub(balanceFrom, amount)
             let balanceToAfter := add(balanceTo, amount)
 
-            sstore(balanceFrom, balanceFromAfter)
-            sstore(balanceTo, balanceToAfter)           
+            sstore(fromKey, balanceFromAfter)
+            sstore(toKey, balanceToAfter)           
         }
 
         emit Transfer(from, to, amount);
@@ -129,6 +153,7 @@ contract ERC20 is Ownable {
         address from = msg.sender;
         _transfer(from, to, amount);
         emit Transfer(from, to, amount);
+
         return true;
     }
 
@@ -145,35 +170,38 @@ contract ERC20 is Ownable {
 
             mstore(0x00, spender)
             mstore(0x20, innerSlot)
-            let _allowance := sload(keccak256(0x00, 0x40))
+            let _allowanceKey := keccak256(0x00, 0x40)
+            let _allowance := sload(_allowanceKey)
 
             mstore(0x00, from)
             mstore(0x20, _balances.slot)
-            let balanceFrom := sload(keccak256(0x00, 0x40))
+            let fromKey := keccak256(0x00, 0x40)
+            let balanceFrom := sload(fromKey)
 
             mstore(0x00, to)
             mstore(0x20, _balances.slot)
-            let balanceSpender := sload(keccak256(0x00, 0x40))
+            let toKey := keccak256(0x00, 0x40)
+            let balanceTo := sload(toKey)
 
             if lt(_allowance, amount) {
                 mstore(0x00, 0x5480b8df)
                 revert(0x1c, 0x04)
             }
 
-            if ls(balanceFrom, amount) {
+            if lt(balanceFrom, amount) {
                 mstore(0x00, 0x5480b8df)
                 revert(0x1c, 0x04)
             }
 
 
             let newAllowance := sub(_allowance, amount)
-            sstore(_allowance, newAllowance)
+            sstore(_allowanceKey, newAllowance)
 
-            let balanceOwnerAfter := sub(balanceOwner, amount)
-            sstore(balanceOwner, balanceOwnerAfter)
+            let balanceFromAfter := sub(balanceFrom, amount)
+            sstore(fromKey, balanceFromAfter)
 
-            let balanceSpenderAfter := add(balanceSpender, amount)
-            sstore(balanceSpender, balanceSpednerAfter)
+            let balanceToAfter := add(balanceTo, amount)
+            sstore(toKey, balanceToAfter)
 
         }
         
@@ -211,24 +239,13 @@ contract ERC20 is Ownable {
         return true;
     }
     
-    function _mint(uint amount) 
-        external 
+    function _mint(address to, uint amount) 
+        private 
         onlyOwner
         returns(bool)
     {
         assembly {
-            let _TotalSupply := sload(_totalSupply.slot)
-
-            mstore(0x00, _TotalSupply)
-            mstore(0x20, _balances.slot)
-
-            let balanceBefore := sload(keccak256(0x00, 0x40))
-            let balanceAfter := add(balanceBefore, amount)
-
-            if lt(balanceAfter, balanceBefore) {
-                mstore(0x00, 0x792bbe49)
-                revert(0x1c, 0x04)
-            }
+            
         }
 
         return true;
@@ -240,21 +257,11 @@ contract ERC20 is Ownable {
         returns(bool)
     {
         assembly {
-            let _TotalSupply := sload(_totalSupply.slot)
-
-            mstore(0x00, _TotalSupply)
-            mstore(0x20, _balances.slot)
-
-            let balanceBefore := sload(keccak256(0x00, 0x40))
-            let balanceAfter := sub(balanceBefore, amount)
-
-            if gt(balanceAfter, balanceBefore) {
-                mstore(0x00, 0x792bbe49)
-                revert(0x1c, 0x04)
-            }
+           
         }
-
+        
         return true;
+
     }
 
     receive() external payable {}

@@ -7,7 +7,6 @@ pragma solidity ^0.8.27;
 contract Ownable {
 
     //@notice Define error Handling in contracts
-    //@dev Better for gas optimisation and code understaning
     error InvalidOwner(); //keccak256 0x49e27cffb37b1ca4a9bf5318243b2014d13f940af232b8552c208bdea15739da
     error NotOwner(); //keccak256 0x30cd74712f59d478562d48e2d35de830db72c60a63dd08ae59199eec990b5bc4
 
