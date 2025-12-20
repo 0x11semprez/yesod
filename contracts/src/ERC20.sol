@@ -13,6 +13,7 @@ import {Ownable} from "./Ownable.sol";
     error OverflowError(); //keccak256 0x3050f6b6cb48b3e4ea702c585b4b686989a4b52ad93ab2d1cbd92df13248bd66
     error AlreadyInitialized(); //keccak256 0x8f076f42b0523e885c670e4a6fe058ff88bd4a1ed50db5541025e052a00a98a5
     error Address0(); //keccak256 0xc5bfd600aba324752e9fa24f3789392bea12ddc8a5a813994f04863d8599fc49
+    error NothingToMint(); //keccak256 0x418c904d3c63dc6f26b682a4d17f54e4dfb0424002658f1142c27ddbe10b6f43
 
     //@dev As you might know, just events;
     event Approval(address indexed owner, address indexed spender, uint amount);
@@ -25,8 +26,9 @@ import {Ownable} from "./Ownable.sol";
     
     //@dev I want to mint my token every 0.11/minutes, so we need to know how token are emitted in a second without forgetting that solidity didn't take float.
     // so 0.11÷60≈0.001833333 token/sec, 0.001833333 * 1e18 because my token have 18 decimals ≈ 1.833333e15 wei-token / sec
-    uint public constant EMISSIONRATE = 1833333333333333;
+    uint private constant EMISSIONRATE = 1833333333333333;
     uint public lastMinted = block.timestamp;
+    uint public totalMinted;
 
 
     mapping(address => uint) private _balances;
@@ -119,6 +121,14 @@ import {Ownable} from "./Ownable.sol";
             mstore(0x00, balanceContract)
             return(0x00, 32)
         }
+    }
+
+    function getEMISSIONRATE() 
+        public 
+        view 
+        returns(uint)
+    {
+
     }
 
 
@@ -246,38 +256,40 @@ import {Ownable} from "./Ownable.sol";
 
         return true;
     }
-    
-    function _mint(address to, uint amount) 
-        internal
+     
+
+    //@dev just for test
+    function _mint(address msg.sender) 
+        private
         onlyOwner
         returns(bool)
     {
         assembly {
-            let from := caller()
+            let lastMint:= sload(lastMint.slot)
+            let emissionRate := 1833333333333333
+            let totalMinted := sload(totalMinted.slot)
+            let restTime := timestamp() - lastMint
+            
 
-            mstore(0x00, from)
-            mstore(0x20, _balances.slot)
-            let fromKey := keccak256(0x00, 0x40)
-            let fromBalance := sload(fromKey)
-
-            mstore(0x00, to)
-            mstore(0x20, _balances.slot)
-            let toKey := keccak256(0x00, 0x40)
-            let toBalance := sload(tomKey)
-
-            if ls(from, amount) {
-                mstore(0x00, 0x5480b8df)
+            if lt(restTime, 0) {
+                mstore(0x00, 0xe10b6f43)
                 return(0x1c, 0x04)
             }
             
-            let fromBalanceAfter := sub(fromBalance, amount)
-            sstore(fromKey, fromBalanceAfter)
+            let amount := restTime * emissionRate
+            let lastMint = timestamp()
 
-            let toBalanceAfter := add(toBalance, amount)
-            sstore(toKey, toBalanceAfter)
+            mstore(0x00, caller())
+            mstore(0x20, _balances.slot)
+            let callerKey := keccak256(0x00, 0x40)
+            let callerBalance := sload(callerKey)
+
+            let callerBalanceAfter:= add(callerBlance, amount)
+            mstore(callerKey, callerBalance)
+
+            
         }
 
-        Mint(from, to, amount)
         return true;
     }
 
