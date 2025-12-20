@@ -4,14 +4,13 @@ pragma solidity ^0.8.27;
 import "./Ownable.sol";
 
 contract ERC20 is Ownable {
+
     //@notice You can see all errors here;
     //@dev error handling help you to spend less gas;
 
-    error notEnoughETHInYourWallet(); 
-    error transactionFailed(); 
-    error notEnoughAllowToSpend();
-    error  insufficientFunds();
-    error overflowError();
+    error TransactionFailed(); //keccak256 0xf65044edbd7753e2683b3e1f1116675530a1ea8dc243f8c08c1e4946045da917
+    error InsufficientFunds(); //keccak256 0xd2ce7f36f76fcb4610533d95a01cb9b0fdd2b058fe7ffae027e7112f5480b8df
+    error OverflowError(); //keccak256 0x3050f6b6cb48b3e4ea702c585b4b686989a4b52ad93ab2d1cbd92df13248bd66
 
 
     //@dev As you might know, just events;
@@ -107,7 +106,7 @@ contract ERC20 is Ownable {
             let balanceTo := sload(keccak256(0x00, 0x40))
 
             if lt(balanceFrom, amount) {
-                mstore(0x00, 0x7afc78eb)
+                mstore(0x00, 0x5480b8df)
                 revert(0x1c, 0x04)
             }
 
@@ -133,33 +132,39 @@ contract ERC20 is Ownable {
         return true;
     }
 
-    function transferFrom(address owner, address spender, uint256 amount) 
+    function transferFrom(address from, address to, uint256 amount) 
         public 
         returns(bool) 
     {
-        address spender = msg.sender;
-        uint newAllowance;
         assembly {
-            mstore(0x00, owner)
+            let spender := caller()
+
+            mstore(0x00, from)
             mstore(0x20, _allowances.slot)
             let innerSlot := keccak256(0x00,0x40)
 
-            mstore(0x40, innerSlot)
-            mstore(0x60, spender)
-            let _allowance := sload(keccak256(0x40, 0x80))
-
-            mstore(0x00, owner)
-            mstore(0x20, _balances.slot)
-            let balanceOwner := sload(keccak256(0x00, 0x40))
-
             mstore(0x00, spender)
+            mstore(0x20, innerSlot)
+            let _allowance := sload(keccak256(0x00, 0x40))
+
+            mstore(0x00, from)
+            mstore(0x20, _balances.slot)
+            let balanceFrom := sload(keccak256(0x00, 0x40))
+
+            mstore(0x00, to)
             mstore(0x20, _balances.slot)
             let balanceSpender := sload(keccak256(0x00, 0x40))
 
             if lt(_allowance, amount) {
-                mstore(0x00, 0xfb37dadb)
+                mstore(0x00, 0x5480b8df)
                 revert(0x1c, 0x04)
             }
+
+            if ls(balanceFrom, amount) {
+                mstore(0x00, 0x5480b8df)
+                revert(0x1c, 0x04)
+            }
+
 
             let newAllowance := sub(_allowance, amount)
             sstore(_allowance, newAllowance)
@@ -172,7 +177,6 @@ contract ERC20 is Ownable {
 
         }
         
-        _transfer(owner, spender, amount);
         return true;
     }
 
