@@ -3,6 +3,7 @@ pragma soldity ^0.8.27;
 
 import {Ownable} from "./OwnLib/Ownable.sol";
 import {OwnableRoles} from "./OwnLib/OwnableRoles.sol";
+import {Treasory} from "./Treasory.sol"
 
 contract Treasory is Ownable, OwnableRoles {
 
