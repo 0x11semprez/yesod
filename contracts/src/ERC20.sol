@@ -1,9 +1,11 @@
 //SPDX-Licence-Identifier: MIT
 pragma solidity ^0.8.27;
 
-import {Ownable} from "./Ownable.sol";
+import {Ownable} from "./OwnLib/Ownable.sol";
+import {OwnableRoles} from "./OwnLib/OwnableRoles.sol";
+import {Treasory} from "./Treasory.sol";
 
- contract ERC20 is Ownable {
+ contract ERC20 is Ownable, OwnableRoles, Treasory {
 
     //@notice You can see all errors here;
     //@dev error handling help you to spend less gas;
@@ -13,7 +15,7 @@ import {Ownable} from "./Ownable.sol";
     error OverflowError(); //keccak256 0x3050f6b6cb48b3e4ea702c585b4b686989a4b52ad93ab2d1cbd92df13248bd66
     error AlreadyInitialized(); //keccak256 0x8f076f42b0523e885c670e4a6fe058ff88bd4a1ed50db5541025e052a00a98a5
     error Address0(); //keccak256 0xc5bfd600aba324752e9fa24f3789392bea12ddc8a5a813994f04863d8599fc49
-    error NothingToMint(); //keccak256 0x418c904d3c63dc6f26b682a4d17f54e4dfb0424002658f1142c27ddbe10b6f43
+
 
     //@dev As you might know, just events;
     event Approval(address indexed owner, address indexed spender, uint amount);
@@ -21,22 +23,15 @@ import {Ownable} from "./Ownable.sol";
     event Mint(address indexed from, address indexed to, uint amount);
 
 
-    //@dev I choose a pre definied supply;
+    //@dev Pre definied supply for deflation;
     uint private _totalSupply = 10000000;
     
-    //@dev I want to mint my token every 0.11/minutes, so we need to know how token are emitted in a second without forgetting that solidity didn't take float.
-    // so 0.11÷60≈0.001833333 token/sec, 0.001833333 * 1e18 because my token have 18 decimals ≈ 1.833333e15 wei-token / sec
-    uint private constant EMISSIONRATE = 1833333333333333;
-    uint public totalMinted = 0;
-
-
     mapping(address => uint) private _balances;
     mapping(address => mapping(address => uint)) private _allowances;
 
     constructor() {
-        address _contract = address(this);
-        if (_balances[_contract] != 0) {revert AlreadyInitialized()}
-        _balances[_contract] = _totalSupply;
+        _balances[msg.sender] += 100000;
+        decrementTotalSupply(100000);
     }
 
     //@notice Some views functions.
@@ -251,80 +246,18 @@ import {Ownable} from "./Ownable.sol";
     {
         address owner = msg.sender;
         _allowances[owner][spender] = amount;
-        Approval(owner, spender, amount);
-
-        return true;
-    }
-     
-
-    //@dev just for test
-    function _mint() 
-        internal
-        onlyOwner
-        returns(bool)
-    {
-        assembly {
-            let _totalMinted := sload(totalMinted.slot)
-            let _EMISSIONRATE := 1833333333333333
-           
-
-            sstore(totalMinted.slot, add(_totalMinted, amount))
-
-            mstore(0x00, caller())
-            mstore(0x20, _balances.slot)
-            let callerKey := keccak256(0x00, 0x40)
-            let callerBalance := sload(callerKey)
-
-            let callerBalanceAfter:= add(callerBlance, amount)
-            sstore(callerKey, callerBalanceAfter)     
-        }
-
+        emit Approval(owner, spender, amount);
 
         return true;
     }
 
-    function _burn(uint amount) 
-        internal
-        onlyOwner 
-        returns(bool)
-    {
+    function decrementTotalSupply(uint amount) internal {
         assembly {
-            let from := caller()
-
-            mstore(0x00, from)
-            mstore(0x20, _balances.slot)
-            let fromKey := keccak256(0x00, 0x40)
-            let balanceFrom := sload(fromKey)
-
-            if lt(balanceFrom, amount) {
-                mstore(0x00, 0x3248bd66)
-                revert(0x1c, 0x04)
-            }
-
-            let balanceFromAfter := sub(balanceFrom, amount)
-            sstore(fromKey, balanceFromAfter)
-
-            let _address0 := address(0)
-
-            mstore(0x00, _address0)
-            mstore(0x20, _balances.slot)
-            let zeroKey := keccak256(0x00, 0x40)
-            let balance0 := sload(zeroKey)
-
-            let balance0After := add(balance0, amount)
-            sstore(zeroKey, balance0After)
-
             let TotalSupply := sload(_totalSupply.slot)
-            if lt(TotalSupply, amount) {
-                mstore(0x00,0x3248bd66)
-                revert(0x1c, 0x04)
-            }
-
-            let TotalSupplyAfter := sub(TotalSupply, amount)
-            sstore(_totalSupply.slot, TotalSupplyAfter)
+            let newTotalSupply := sub(TotalSupply, amount)
+            sstore(_totalSupply.slot, newTotalSupply)
         }
-
-        return true;
-
     }
 }
+
+

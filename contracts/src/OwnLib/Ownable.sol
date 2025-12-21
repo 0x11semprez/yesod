@@ -1,5 +1,5 @@
 //SPDX-Licence-Identifier: MIT
-pragma solidity ^0.8.27;
+pragma solidity 0.8.27;
 
 //@title Ownable Contract By Me
 //@dev This not recommended to create your own lib Ownable or SafeERC20 or whatever it is because you could make mistakes, so better to use something who works without a doubt, Trust OpenZellin
@@ -7,6 +7,7 @@ pragma solidity ^0.8.27;
 contract Ownable {
 
     //@notice Define error Handling in contracts
+    //@dev Better for gas optimisation and code understaning
     error InvalidOwner(); //keccak256 0x49e27cffb37b1ca4a9bf5318243b2014d13f940af232b8552c208bdea15739da
     error NotOwner(); //keccak256 0x30cd74712f59d478562d48e2d35de830db72c60a63dd08ae59199eec990b5bc4
 
@@ -29,20 +30,24 @@ contract Ownable {
     function owner() 
         public 
         view 
-        returns(address mainOwner) 
+        returns(address) 
     {
         assembly {
-            mainOwner := sload(_owner.slot)
+            let mainOwner := sload(_owner.slot)
+            mstore(0x00, shl(96, mainOwner))
+            return(0x00, 20)
         }
     }
 
     function oldOwner() 
         public 
         view 
-        returns(address previousOwner) 
+        returns(address) 
     {
         assembly {
-            previousOwner := sload(_oldOwner.slot)
+            let OldOwner := sload(_oldOwner.slot)
+            mstore(0x00, shl(96, OldOwner))
+            return(0x00, 20)
         }
     }
     
@@ -70,9 +75,14 @@ contract Ownable {
                 mstore(0x00, 0xa15739da)
                 revert(0x1c, 0x04)
             }
+
+            let Owner := sload(_owner.slot)
+            let OldOwner := sload(_oldOwner.slot)
+
+            sstore(_oldOwner.slot, Owner)            
+            sstore(_owner.slot, newOwner)
         }
-        _oldOwner = _owner;
-        _owner =  newOwner;
+
         emit TransferOwnership(_oldOwner, _owner);
     }
 
