@@ -27,8 +27,7 @@ import {Ownable} from "./Ownable.sol";
     //@dev I want to mint my token every 0.11/minutes, so we need to know how token are emitted in a second without forgetting that solidity didn't take float.
     // so 0.11÷60≈0.001833333 token/sec, 0.001833333 * 1e18 because my token have 18 decimals ≈ 1.833333e15 wei-token / sec
     uint private constant EMISSIONRATE = 1833333333333333;
-    uint public lastMinted = block.timestamp;
-    uint public totalMinted;
+    uint public totalMinted = 0;
 
 
     mapping(address => uint) private _balances;
@@ -128,7 +127,7 @@ import {Ownable} from "./Ownable.sol";
         view 
         returns(uint)
     {
-
+        return 1833333333333333;
     }
 
 
@@ -252,32 +251,24 @@ import {Ownable} from "./Ownable.sol";
     {
         address owner = msg.sender;
         _allowances[owner][spender] = amount;
-        emit Approval(owner, spender, amount);
+        Approval(owner, spender, amount);
 
         return true;
     }
      
 
     //@dev just for test
-    function _mint(address msg.sender) 
-        private
+    function _mint() 
+        internal
         onlyOwner
         returns(bool)
     {
         assembly {
-            let lastMint:= sload(lastMint.slot)
-            let emissionRate := 1833333333333333
-            let totalMinted := sload(totalMinted.slot)
-            let restTime := timestamp() - lastMint
-            
+            let _totalMinted := sload(totalMinted.slot)
+            let _EMISSIONRATE := 1833333333333333
+           
 
-            if lt(restTime, 0) {
-                mstore(0x00, 0xe10b6f43)
-                return(0x1c, 0x04)
-            }
-            
-            let amount := restTime * emissionRate
-            let lastMint = timestamp()
+            sstore(totalMinted.slot, add(_totalMinted, amount))
 
             mstore(0x00, caller())
             mstore(0x20, _balances.slot)
@@ -285,10 +276,9 @@ import {Ownable} from "./Ownable.sol";
             let callerBalance := sload(callerKey)
 
             let callerBalanceAfter:= add(callerBlance, amount)
-            mstore(callerKey, callerBalance)
-
-            
+            sstore(callerKey, callerBalanceAfter)     
         }
+
 
         return true;
     }
@@ -299,9 +289,41 @@ import {Ownable} from "./Ownable.sol";
         returns(bool)
     {
         assembly {
-           
+            let from := caller()
+
+            mstore(0x00, from)
+            mstore(0x20, _balances.slot)
+            let fromKey := keccak256(0x00, 0x40)
+            let balanceFrom := sload(fromKey)
+
+            if lt(balanceFrom, amount) {
+                mstore(0x00, 0x3248bd66)
+                revert(0x1c, 0x04)
+            }
+
+            let balanceFromAfter := sub(balanceFrom, amount)
+            sstore(fromKey, balanceFromAfter)
+
+            let _address0 := address(0)
+
+            mstore(0x00, _address0)
+            mstore(0x20, _balances.slot)
+            let zeroKey := keccak256(0x00, 0x40)
+            let balance0 := sload(zeroKey)
+
+            let balance0After := add(balance0, amount)
+            sstore(zeroKey, balance0After)
+
+            let TotalSupply := sload(_totalSupply.slot)
+            if lt(TotalSupply, amount) {
+                mstore(0x00,0x3248bd66)
+                revert(0x1c, 0x04)
+            }
+
+            let TotalSupplyAfter := sub(TotalSupply, amount)
+            sstore(_totalSupply.slot, TotalSupplyAfter)
         }
-        
+
         return true;
 
     }
