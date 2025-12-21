@@ -75,7 +75,7 @@ import {Treasory} from "./Treasory.sol";
     {
         assembly {
             mstore(0x00, 18)      
-            return(0x00, 0x20) 
+            return(0x00, 32) 
         }
     }
 
@@ -86,7 +86,7 @@ import {Treasory} from "./Treasory.sol";
     {
         assembly {
             mstore(0x00, 1000000)     
-            return(0x00, 0x20) 
+            return(0x00, 32) 
         }
     }
 
