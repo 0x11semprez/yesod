@@ -31,7 +31,6 @@ import {Treasory} from "./Treasory.sol";
     constructor() {
         address _contract = address(this);
         _balances[_contract] = _totalSupply;
-        _balances[msg.sender] += 100000;
         decrementTotalSupply(100000);
     }
 
@@ -74,7 +73,10 @@ import {Treasory} from "./Treasory.sol";
         view 
         returns(uint) 
     {
-        return 18;
+        assembly {
+            mstore(0x00, 18)      
+            return(0x00, 0x20) 
+        }
     }
 
     function getTotalSupply() 
@@ -82,7 +84,10 @@ import {Treasory} from "./Treasory.sol";
         view 
         returns(uint) 
     {
-        return 1000000;
+        assembly {
+            mstore(0x00, 1000000)     
+            return(0x00, 0x20) 
+        }
     }
 
 
@@ -117,15 +122,6 @@ import {Treasory} from "./Treasory.sol";
             return(0x00, 32)
         }
     }
-
-    function getEMISSIONRATE() 
-        public 
-        view 
-        returns(uint)
-    {
-        return 1833333333333333;
-    }
-
 
     function _transfer(address from, address to, uint amount) 
         internal 
@@ -258,5 +254,3 @@ import {Treasory} from "./Treasory.sol";
         }
     }
 }
-
-
