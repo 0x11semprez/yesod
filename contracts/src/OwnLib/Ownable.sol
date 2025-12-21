@@ -1,4 +1,4 @@
-//SPDX-Licence-Identifier: MIT
+//SPDX-Licence-Identifier: MIT;
 pragma solidity ^0.8.27;
 
 //@title Ownable Contract By Me

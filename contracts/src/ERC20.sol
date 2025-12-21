@@ -1,4 +1,4 @@
-//SPDX-Licence-Identifier: MIT
+//SPDX-Licence-Identifier: MIT;
 pragma solidity ^0.8.27;
 
 import {Ownable} from "./OwnLib/Ownable.sol";
@@ -26,8 +26,8 @@ import {Treasory} from "./Treasory.sol";
     //@dev Pre definied supply for deflation;
     uint private _totalSupply = 10000000;
     
-    mapping(address => uint) private _balances;
-    mapping(address => mapping(address => uint)) private _allowances;
+    mapping(address => uint) internal _balances;
+    mapping(address => mapping(address => uint)) internal _allowances;
 
     constructor() {
         _balances[msg.sender] += 100000;

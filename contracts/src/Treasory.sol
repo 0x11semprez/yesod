@@ -1,11 +1,11 @@
 //SPDX-Licence-Identifiere: MIT;
-pragma soldity ^0.8.27;
+pragma solidity ^0.8.27;
 
 import {Ownable} from "./OwnLib/Ownable.sol";
 import {OwnableRoles} from "./OwnLib/OwnableRoles.sol";
-import {Treasory} from "./Treasory.sol"
+import {ERC20} from "./ERC20.sol";
 
-contract Treasory is Ownable, OwnableRoles {
+contract Treasory is ERC20, Ownable, OwnableRoles {
 
     function _mint(address account, bool roles) 
         internal
