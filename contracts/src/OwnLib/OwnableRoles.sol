@@ -1,7 +1,7 @@
 //SPDX-Licence-Identifier: MIT;
 pragma solidity ^0.8.27;
 
-import {Ownable} from "./Ownable";
+import {Ownable} from "./Ownable.sol";
 
 contract OwnableRoles is Ownable {
 
