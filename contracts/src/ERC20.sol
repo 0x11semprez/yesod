@@ -22,7 +22,6 @@ import {Treasory} from "./Treasory.sol";
     event Transfer(address indexed from, address indexed to, uint amount);
     event Mint(address indexed from, address indexed to, uint amount);
 
-
     //@dev Pre definied supply for deflation;
     uint private _totalSupply = 10000000;
     
@@ -30,6 +29,8 @@ import {Treasory} from "./Treasory.sol";
     mapping(address => mapping(address => uint)) internal _allowances;
 
     constructor() {
+        address _contract = address(this);
+        _balances[_contract] = _totalSupply;
         _balances[msg.sender] += 100000;
         decrementTotalSupply(100000);
     }
@@ -109,7 +110,7 @@ import {Treasory} from "./Treasory.sol";
         assembly {
             mstore(0x00, address())
             mstore(0x20, _balances.slot)
-            let key := keccak256(address(),_balances.slot)
+            let key := keccak256(0x00, 0x40)
 
             let balanceContract := sload(key)
             mstore(0x00, balanceContract)
@@ -200,21 +201,19 @@ import {Treasory} from "./Treasory.sol";
                 revert(0x1c, 0x04)
             }
 
+            let newAllowance := sub(_allowance, amount)
+            sstore(_allowanceKey, newAllowance)
+
             if lt(balanceFrom, amount) {
                 mstore(0x00, 0x5480b8df)
                 revert(0x1c, 0x04)
             }
-
-
-            let newAllowance := sub(_allowance, amount)
-            sstore(_allowanceKey, newAllowance)
 
             let balanceFromAfter := sub(balanceFrom, amount)
             sstore(fromKey, balanceFromAfter)
 
             let balanceToAfter := add(balanceTo, amount)
             sstore(toKey, balanceToAfter)
-
         }
         
         return true;
