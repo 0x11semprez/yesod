@@ -16,7 +16,7 @@ contract OwnableRoles is Ownable {
     uint256 internal constant _OPHANIM = 1 << 5;
     uint256 internal constant _CHERUBIM = 1 << 6;
     uint256 internal constant _SERAPHIM = 1 << 7;
-    uint256 internal constant _CHAYOT_HAKODESH = 1 << 8;
+      uint256 internal constant _CHAYOT_HAKODESH = 1 << 8;
     uint256 internal constant _SAMAEL = 1 << 9;
     
 }

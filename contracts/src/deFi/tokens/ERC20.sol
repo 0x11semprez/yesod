@@ -52,7 +52,6 @@ import {Treasory} from "./Treasory.sol";
         }
     }
 
-
     function getTokenSymbol() 
         public 
         view 
@@ -89,7 +88,6 @@ import {Treasory} from "./Treasory.sol";
             return(0x00, 32) 
         }
     }
-
 
     function getBalance() 
         public 
