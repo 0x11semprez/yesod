@@ -1,8 +1,8 @@
 //SPDX-Licence-Identifier: MIT;
 pragma solidity ^0.8.27;
 
-import {Ownable} from "./OwnLib/Ownable.sol";
-import {OwnableRoles} from "./OwnLib/OwnableRoles.sol";
+import {Ownable} from "../access/Ownable.sol";
+import {OwnableRoles} from "../access/OwnableRoles.sol";
 import {Treasory} from "./Treasory.sol";
 
  contract ERC20 is Ownable, OwnableRoles, Treasory {
