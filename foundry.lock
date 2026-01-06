@@ -1,0 +1,11 @@
+{
+  "lib/openzeppelin-contracts": {
+    "tag": {
+      "name": "v4.9.5",
+      "rev": "bd325d56b4c62c9c5c1aff048c37c6bb18ac0290"
+    }
+  },
+  "lib/redstone-oracles-monorepo": {
+    "rev": "e6cea9716949e9df84b686ef90f8504e1ba4c86a"
+  }
+}

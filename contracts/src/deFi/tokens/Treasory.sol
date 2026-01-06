@@ -4,8 +4,13 @@ pragma solidity ^0.8.27;
 import {Ownable} from "./OwnLib/Ownable.sol";
 import {OwnableRoles} from "./OwnLib/OwnableRoles.sol";
 import {ERC20} from "./ERC20.sol";
+import "@redstone-finance/evm-connector/contracts/data-services/MainDemoConsumerBase.sol";
 
-contract Treasory is ERC20, Ownable, OwnableRoles {
+contract Treasory is ERC20, Ownable, OwnableRoles, MainDemoConsumerBase {
+    function getLastPrice() external view returns(uint256) {
+        bytes32 eurymbol= bytes32("EUR");
+        return getOracleNumericValueFromTxMsg(eurSymbol);
+    }
 
     function _mint(address account, bool roles) 
         internal
