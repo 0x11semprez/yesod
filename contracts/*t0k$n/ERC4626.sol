@@ -51,16 +51,118 @@ contract ERC4626 {
         view 
         returns (uint256 shares) 
     {
-        uint supply = totalSupply();
+        uint supply = _totalSupply;
 
         return supply == 0 ? assets: assets.mulDivDown(supply, totalSupply());
     }
 
+    function convertToAssets(uint256 shares)
+        public
+        view
+        returns (uint256 assets)
+    {
+        uint supply = _totalSuppply;
+
+        return supply == 0 ? shares: shares.mulDivDown(totalAsset(), supply);
+    }
+
+
+    function previewDeposit(uint256 assets) 
+        public 
+        view 
+        returns (uint256 shares) 
+    {
+        return convertToShares(assets);
+    }
+
+
+    function previewMint(uint256 shares) 
+        public 
+        view 
+        returns (uint256 assets) 
+    {
+        uint supply = _totalSupply;
+        return supply == 0 ? shares : shares.mulDivUp(totalAsset(), supply);
+    }
+
+    
+
+    function previewWithdraw(uint256 assets) 
+        public 
+        view 
+        returns (uint256 shares)
+    {
+        uint supply = _totalSupply;
+
+        return supply == 0 ? assets: assets.mulDivUp(supply, totalAsset());
+    }
+
+    function previewRedeem(uint256 shares) 
+        public 
+        view 
+        returns (uint256 assets)
+    {
+        return convertToAssets(shares);
+    }
+
+    function maxWithdraw(address owner) 
+        public 
+        view 
+        returns (uint256 maxAssets) 
+    {
+        assembly {
+            mstore(0x00, owner)
+            mstore(0x20, BALANCES_SLOT)
+
+            let OwnerKey := keccak256(0x00, 0x40)
+            let BalanceOwner := sload(OwnerKey)
+
+            mstore(0x00, BalanceOwner)
+            returm(0x00, 32)
+        }
+
+        return convertToAssets(BalanceOwner);
+    }
+
+    function maxRedeem(address owner) 
+        public 
+        view 
+        returns (uint256 maxShares)
+    {
+        assembly {
+            mstore(0x00, owner)
+            mstore(0x20, BALANCES_SLOT)
+
+            let OwnerKey := keccak256(0x00, 0x40)
+            let BalanceOwner := sload(OwnerKey)
+
+            mstore(0x00, BalanceOwner)
+            return(0x00, 32)
+        }
+    }
+
+    function maxDeposit(address receiver) 
+        public 
+        view 
+        returns (uint256 maxAssets) 
+    {
+        return type(uint256).max;
+    }
+
+    function maxMint(address receiver) 
+        public 
+        view 
+        returns (uint256 maxShares) 
+    {
+        return type(uint256).max;
+    }
+     
     function deposit(uint256 assets, address receiver) 
         public 
         returns (uint256 shares) 
     {
         uint shares = previewDeposit(assets);
+
         assembly {
             if lt(shares,0) {
                 mstore(0x00, 0x49b043c6)
@@ -77,47 +179,44 @@ contract ERC4626 {
         //a revoir parce que c est pas fou, je dosi recode fix safe math, et safe tyransfert from.
     }
 
-    function previewDeposit(uint256 assets) 
+    function mint(uint256 shares, address receiver) 
         public 
-        view 
-        returns (uint256 shares) 
+        returns (uint256 assets) 
     {
-        return convertToShares(assets);
+
     }
 
-    
-    
+
+    function withdraw(uint256 assets, address receiver, address owner) 
+        public 
+        returns (uint256 shares) 
+    {
+
+    }
+
+    function redeem(uint256 shares, address receiver, address owner) 
+        public 
+        returns (uint256 assets) 
+    {
+
+    }
 
 
+    function balanceOf(address owner) 
+        public 
+        view returns (uint256) 
+    {
+        assembly {
+            mstore(0x00, owner)
+            mstore(0x20, BALANCES_SLOT)
 
+            let OwnerKey := keccak256(0x00, 0x40)
+            let BalanceOwner := sload(OwnerKey)
 
-
-    function maxDeposit(address receiver) public view returns (uint256 maxAssets);
-
-    
-
-
-
-    function maxMint(address receiver) public view returns (uint256 maxShares)
-
-    function previewMint(uint256 shares) public view returns (uint256 assets)
-
-    function mint(uint256 shares, address receiver) public returns (uint256 assets)
-
-    function maxWithdraw(address owner) public view returns (uint256 maxAssets)
-
-    function previewWithdraw(uint256 assets) public view returns (uint256 shares)
-
-    function withdraw(uint256 assets, address receiver, address owner) public returns (uint256 shares)
-
-    function maxRedeem(address owner) public view returns (uint256 maxShares)
-
-    function previewRedeem(uint256 shares) public view returns (uint256 assets)
-
-    function redeem(uint256 shares, address receiver, address owner) public returns (uint256 assets)
-
-
-    function balanceOf(address owner) public view returns (uint256)
+            mstore(0x00, BalanceOwner)
+            return(0x00, 32)
+        }
+    }
 
     function safeTransferFrom(ERC20 token, address from, address to, uint amount) 
         private
@@ -150,10 +249,7 @@ contract ERC4626 {
                 revert(0x1c, 0x04)
             }
         }
-
     } 
-
-
 }
 
 //What this contract is supposed to do ?
