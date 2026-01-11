@@ -106,8 +106,8 @@ contract Ownable {
      */
     function owner() public view returns (address) {
         assembly {
-            let mainOwner := sload(_owner.slot)
-            mstore(0x00, shl(96, mainOwner))
+            let MainOwner := sload(_owner.slot)
+            mstore(0x00, shl(96, MainOwner))
             return(0x00, 20)
         }
     }
