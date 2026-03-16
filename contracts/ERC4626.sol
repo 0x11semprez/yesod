@@ -11,7 +11,7 @@ import {ERC20} from "ERC20.sol";
 
 /**
  * @title  ERC4626
- * @author Kassim Traore
+ * @author 0x11semprez
  * @notice ERC4626-style vault: deposit assets, receive shares; redeem shares, receive assets.
  *
  * @dev
@@ -231,8 +231,6 @@ contract ERC4626 is ERC20 {
     }
 
     
-
-
     /**
      * @notice Preview shares received for depositing `assets`.
      * @dev Uses convertToShares(assets) with current ratio.
@@ -362,9 +360,6 @@ contract ERC4626 is ERC20 {
         return type(uint256).max;
     }
      
-
-     // ask --> assets --> shares
-     // If I give you  assets, how much shares I buy.
     /**
      * @notice Deposits `assets` and mints shares to `receiver`.
      * @dev
@@ -397,12 +392,10 @@ contract ERC4626 is ERC20 {
 
         emit Deposit(address(this), receiver, assets, shares);
 
-        //a revoir parce que c est pas fou, je dois recode fix safe math, et safe tyransfert from.
+       
     }
 
-    // ask --> shares --> assets 
-    //IF I give you shares hhow much assets you give me
-    /**
+    
      * @notice Mints `shares` to `receiver` by pulling the required `assets`.
      * @dev
      * - assets = previewMint(shares)
@@ -481,7 +474,7 @@ contract ERC4626 is ERC20 {
         returns (uint256 assets) 
     {
         if (msg.sender != owner) {
-            uint allowedToSpend = allowance[owner][msg.sender]
+            uint allowedToSpend = allowance[owner][msg.sender];
 
             if (allowed != type(uint256).max) allowance[owner][msg.sender] = allowedToSpend - shares;
         }
@@ -554,7 +547,7 @@ contract ERC4626 is ERC20 {
 
             //call in yul 7 arguments(g, a, v, inPtr, inSize, outPtr, outSize)
 
-            let gas := gas()
+            let gas := gas()            
             let a : = token
             let v := 0
             let inPtr := transfer
@@ -569,6 +562,7 @@ contract ERC4626 is ERC20 {
                 revert(0x1c, 0x04)
             }
         }
+        return true;
     } 
 }
 
